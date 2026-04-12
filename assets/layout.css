@@ -1,0 +1,537 @@
+/* ============================================================
+   MANIFESTO LAYOUT SYSTEM
+   Modular, reusable building blocks for section-based manifestos.
+   ============================================================ */
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  /* Color */
+  --cream:      #f5f0e8;
+  --paper:      #ede8dd;
+  --ink:        #1a1a1a;
+  --ink-light:  #3d3d3d;
+  --ink-mid:    #6b6b6b;
+  --rule-light: #c4bfb4;
+  --accent:     #FF6200;
+
+  /* Type */
+  --font-display: 'Playfair Display', serif;
+  --font-body:    'Source Serif 4', serif;
+  --font-sans:    'Instrument Sans', sans-serif;
+  --font-script:  "chantal", sans-serif;
+
+  /* Grid */
+  --grid-gap: 24px;
+  --grid-max: 1440px;
+  --grid-pad: 48px;
+
+  /* Uniform strokes */
+  --stroke-w:    1px;
+  --stroke:      var(--stroke-w) solid var(--ink);
+  --stroke-soft: var(--stroke-w) solid var(--rule-light);
+
+  /* HW layer inset (distance from section edge).
+     Larger value = corner/edge anchors pull inward toward center. */
+  --hw-inset: 40px;
+
+  /* Fixed frame thickness */
+  --frame-t: 40px;
+  --frame-b: 44px;
+  --frame-x: 40px;
+}
+
+html {
+  scroll-snap-type: y mandatory;
+  overflow-y: scroll;
+  scroll-behavior: smooth;
+  scrollbar-width: none;          /* Firefox */
+  -ms-overflow-style: none;       /* IE/legacy Edge */
+}
+html::-webkit-scrollbar { width: 0; height: 0; display: none; }  /* Chrome/Safari */
+
+body {
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============================================================
+   TWO-STAGE SNAP SHELL
+   200vh wrapper with two 100vh snap stops.
+   Stage 1: content enters. Stage 2: hw enters.
+   ============================================================ */
+.snap-wrapper {
+  height: 200vh;
+  position: relative;
+}
+
+.snap-stop {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 100vh;
+  scroll-snap-align: start;
+  pointer-events: none;
+}
+.snap-stop[data-stage="1"] { top: 0; }
+.snap-stop[data-stage="2"] { top: 100vh; }
+
+.snap {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  clip-path: inset(0);
+}
+
+.snap-heavy     { }
+.snap-top-heavy { }
+
+/* ============================================================
+   PAGE GRID — 12 cols, centered content
+   ============================================================ */
+.page-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-template-rows: 1fr;
+  column-gap: var(--grid-gap);
+  max-width: var(--grid-max);
+  width: 100%;
+  padding: 0 var(--grid-pad);
+  margin: 0 auto;
+  height: 100%;
+  position: relative;
+}
+
+.content-cols {
+  grid-column: 3 / 11;
+  grid-row: 1;
+  align-self: center;
+  position: relative;
+  z-index: 2;
+  min-width: 0;
+  will-change: transform;
+}
+
+/* ============================================================
+   HW LAYER — 3×3 positioning grid
+   Use data-hw-pos="tl|tc|tr|ml|mc|mr|bl|bc|br"
+   ============================================================ */
+.hw-layer {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+  padding: var(--hw-inset);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.hw {
+  font-family: var(--font-script);
+  font-weight: 600;
+  font-style: italic;
+  color: var(--accent);
+  line-height: 1.3;
+  font-size: clamp(40px, 3.8vw, 56px);
+  max-width: 34ch;
+  will-change: transform;
+  pointer-events: none;
+  /* Start fully below viewport; JS sets the per-row rise on first tick. */
+  transform: translateY(110vh);
+}
+
+.hw-hero { font-size: clamp(72px, 7vw, 96px); max-width: none; }
+
+/* Spreadsheet coordinates: column letter (A/B/C) + row number (1/2/3).
+   A=left  B=center  C=right
+   1=top   2=middle  3=bottom
+   e.g. A1 = top-left, B2 = dead-center, C3 = bottom-right. */
+
+/* Row placement */
+.hw[data-hw-pos$="1"] { grid-row: 1; align-self: start;  }
+.hw[data-hw-pos$="2"] { grid-row: 2; align-self: center; }
+.hw[data-hw-pos$="3"] { grid-row: 3; align-self: end;    }
+
+/* Column placement + text alignment */
+.hw[data-hw-pos^="A"] { grid-column: 1; justify-self: start;  text-align: left;   }
+.hw[data-hw-pos^="B"] { grid-column: 2; justify-self: center; text-align: center; }
+.hw[data-hw-pos^="C"] { grid-column: 3; justify-self: end;    text-align: right;  }
+
+/* ============================================================
+   MODULAR CONTENT GRID
+   <div class="mod-grid" style="--cols:2;">
+     <div class="mod-cell ..."> ... </div>
+   </div>
+   ============================================================ */
+.mod-grid {
+  --cols: 2;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 1fr);
+  border-top: var(--stroke);
+  border-left: var(--stroke);
+}
+
+.mod-cell {
+  padding: 16px;
+  border-right: var(--stroke);
+  border-bottom: var(--stroke);
+  min-width: 0;
+}
+
+.mod-cell--span    { grid-column: 1 / -1; }
+
+.mod-cell--kicker {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent);
+  padding: 12px 16px;
+}
+
+.mod-cell--head h1,
+.mod-cell--head h2,
+.mod-cell--head {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(26px, 3.2vw, 44px);
+  line-height: 1.06;
+  color: var(--ink);
+}
+.mod-cell--head { padding: 18px 16px; }
+
+.mod-cell--display {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(56px, 8vw, 110px);
+  letter-spacing: -2px;
+  line-height: 0.9;
+  padding: 24px 16px;
+}
+
+.mod-cell--lead {
+  font-size: clamp(15px, 1.6vw, 18px);
+  color: var(--ink);
+  line-height: 1.55;
+}
+
+.mod-cell--quiet  { color: var(--ink-mid); }
+.mod-cell--accent { color: var(--accent); }
+.mod-cell--center { text-align: center; }
+
+.mod-cell--label {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink-mid);
+}
+
+.mod-cell--meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink-mid);
+}
+
+.mod-cell p { font-size: 14px; line-height: 1.55; color: var(--ink-light); margin-bottom: 8px; }
+.mod-cell p:last-child { margin-bottom: 0; }
+.mod-cell strong { color: var(--ink); font-weight: 700; }
+.mod-cell h3 {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  color: inherit;
+}
+
+/* ============================================================
+   CTA BUTTON
+   ============================================================ */
+.cta-button {
+  display: inline-block;
+  margin-top: 24px;
+  padding: 13px 48px;
+  background: var(--ink);
+  color: var(--cream);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: background 0.2s;
+}
+.cta-button:hover { background: var(--accent); }
+
+.inline-link {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--accent);
+  text-decoration: none;
+}
+.inline-link:hover { text-decoration: underline; }
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+footer {
+  min-height: 72px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px var(--grid-pad);
+  border-top: var(--stroke-soft);
+}
+footer span, footer a {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--ink-mid);
+  text-transform: uppercase;
+  text-decoration: none;
+}
+footer a:hover { color: var(--accent); }
+
+/* ============================================================
+   FIXED FRAME
+   Persistent chrome around the scrolling content.
+   ============================================================ */
+.frame {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 50;
+}
+.frame > * {
+  position: absolute;
+  pointer-events: auto;
+}
+
+.frame-top,
+.frame-bottom {
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 0 16px;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink-mid);
+}
+.frame-top    { top: 0;    height: var(--frame-t); }
+.frame-bottom { bottom: 0; height: var(--frame-b); }
+
+.frame-left,
+.frame-right {
+  top: var(--frame-t);
+  bottom: var(--frame-b);
+  width: var(--frame-x);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.frame-left  { left: 0;  }
+.frame-right { right: 0; }
+
+.frame-section {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent);
+  white-space: nowrap;
+  transition: color 0.2s;
+}
+
+.frame-dots {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+}
+.frame-dots li {
+  width: 6px;
+  height: 6px;
+  border: 1px solid var(--ink);
+  border-radius: 50%;
+  background: transparent;
+  transition: background 0.25s, transform 0.25s;
+}
+.frame-dots li.is-active {
+  background: var(--ink);
+  transform: scale(1.4);
+}
+
+.frame-brand,
+.frame-url,
+.frame-email {
+  white-space: nowrap;
+}
+
+.frame-url,
+.frame-email {
+  color: var(--ink-mid);
+  text-decoration: none;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.frame-url:hover,
+.frame-email:hover { color: var(--accent); }
+
+.frame-links {
+  display: flex;
+  gap: 20px;
+  max-width: 50%;
+  text-align: right;
+  justify-content: flex-end;
+}
+.frame-links a {
+  color: var(--ink-mid);
+  text-decoration: none;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.frame-links a:hover { color: var(--accent); }
+
+/* Keep page content off the frame's visual edge.
+   .page-grid already has 48px horizontal padding; add breathing space
+   for the vertical frame bars by reserving body padding. */
+body.has-frame {
+  padding-left:  var(--frame-x);
+  padding-right: var(--frame-x);
+  padding-top:    var(--frame-t);
+  padding-bottom: var(--frame-b);
+}
+body.has-frame .page-grid { padding: 0 24px; }
+body.has-frame footer { display: none; }
+
+/* Below tablet breakpoint, keep only top + bottom bars. */
+@media (max-width: 900px) {
+  body.has-frame {
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .frame-left,
+  .frame-right { display: none; }
+}
+
+@media (max-width: 600px) {
+  :root {
+    --frame-t: 34px;
+    --frame-b: 34px;
+  }
+  .frame-brand { font-size: 9px; }
+  .frame-top,
+  .frame-bottom { font-size: 9px; letter-spacing: 1.5px; padding: 0 12px; }
+}
+
+/* ============================================================
+   SCROLLABLE SECTIONS (JS-toggled via .snap--scrollable)
+   When .content-cols exceeds the viewport, collapse the
+   two-stage shell so content flows at natural height.
+   ============================================================ */
+.snap-wrapper.snap--scrollable {
+  height: auto;
+}
+.snap-wrapper.snap--scrollable .snap-stop { display: none; }
+.snap--scrollable .snap {
+  position: static;
+  height: auto;
+  min-height: 100vh;
+  overflow: visible;
+  clip-path: none;
+  align-items: flex-start;
+}
+.snap--scrollable .page-grid {
+  height: auto;
+  padding-top: 48px;
+  padding-bottom: 48px;
+}
+.snap--scrollable .hw-layer { position: absolute; }
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .content-cols, .hw { transform: none !important; }
+}
+
+/* ============================================================
+   RESPONSIVE — tablet ≤ 900px
+   Collapse page-grid to single column.
+   Collapse 3×3 hw layer to 2 rows (top/bottom), 3 cols.
+   ============================================================ */
+@media (max-width: 900px) {
+  .page-grid {
+    grid-template-columns: 1fr;
+    column-gap: 0;
+    padding: 0;
+  }
+  .content-cols {
+    grid-column: 1;
+    padding: 28px 20px;
+  }
+
+  .hw-layer {
+    grid-template-rows: 1fr 1fr;
+    padding: 16px;
+  }
+  .hw { max-width: 55vw; }
+  .hw-hero { max-width: 80vw; }
+
+  .hw[data-hw-pos$="2"] { grid-row: 1; align-self: end; }
+  .hw[data-hw-pos$="1"] { grid-row: 1; }
+  .hw[data-hw-pos$="3"] { grid-row: 2; }
+
+  .mod-grid { --cols: 1 !important; }
+  .mod-cell--span { grid-column: 1; }
+}
+
+/* ============================================================
+   RESPONSIVE — mobile ≤ 600px
+   ============================================================ */
+@media (max-width: 600px) {
+  .hw { font-size: clamp(32px, 7vw, 44px); max-width: 85vw; }
+  .hw-hero { font-size: clamp(52px, 11vw, 72px); max-width: 95vw; }
+  .content-cols { z-index: 1; }
+  .hw-layer { z-index: 10; padding: 10px; }
+  footer { padding: 16px; flex-direction: column; gap: 6px; text-align: center; }
+}
