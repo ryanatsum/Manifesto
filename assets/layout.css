@@ -31,9 +31,10 @@
   --stroke:      var(--stroke-w) solid var(--ink);
   --stroke-soft: var(--stroke-w) solid var(--rule-light);
 
-  /* HW layer inset (distance from section edge).
-     Larger value = corner/edge anchors pull inward toward center. */
-  --hw-inset: 40px;
+  /* HW layer inset (distance from the frame-bounded area).
+     The layer itself already respects --frame-t / --frame-b;
+     this is the additional buffer before the 3×3 anchor grid. */
+  --hw-inset: 8px;
 
   /* Fixed frame thickness */
   --frame-t: 40px;
@@ -126,7 +127,10 @@ body {
    ============================================================ */
 .hw-layer {
   position: absolute;
-  inset: 0;
+  top: var(--frame-t);
+  bottom: var(--frame-b);
+  left: 0;
+  right: 0;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows: 1fr 1fr 1fr;
@@ -512,7 +516,7 @@ body.has-frame footer { display: none; }
 
   .hw-layer {
     grid-template-rows: 1fr 1fr;
-    padding: 16px;
+    padding: var(--hw-inset) 16px;
   }
   .hw { max-width: 55vw; }
   .hw-hero { max-width: 80vw; }
@@ -532,6 +536,6 @@ body.has-frame footer { display: none; }
   .hw { font-size: clamp(32px, 7vw, 44px); max-width: 85vw; }
   .hw-hero { font-size: clamp(52px, 11vw, 72px); max-width: 95vw; }
   .content-cols { z-index: 1; }
-  .hw-layer { z-index: 10; padding: 10px; }
+  .hw-layer { z-index: 10; padding: var(--hw-inset) 10px; }
   footer { padding: 16px; flex-direction: column; gap: 6px; text-align: center; }
 }
