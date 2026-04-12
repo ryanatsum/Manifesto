@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sharper AI — Manifesto</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://use.typekit.net/toq7lwc.css">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --cream: #f5f0e8;
+  --paper: #ede8dd;
+  --ink: #1a1a1a;
+  --ink-light: #3d3d3d;
+  --ink-mid: #6b6b6b;
+  --rule-light: #c4bfb4;
+  --accent: #FF6200;
+  --font-display: 'Playfair Display', serif;
+  --font-body: 'Source Serif 4', serif;
+  --font-sans: 'Instrument Sans', sans-serif;
+  --font-script: "chantal", sans-serif;
+  /* 12-col grid tokens */
+  --grid-gap:  24px;
+  --grid-max:  1440px;
+  --grid-pad:  48px;
+}
+
+html {
+  scroll-snap-type: y mandatory;
+  overflow-y: scroll;
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============================
+   SNAP SHELL
+   300vh wrapper → sticky 100vh section.
+   Snap fires on wrapper (300vh apart), so
+   the user scrolls 3× a viewport before the
+   next section snaps into place.
+   ============================ */
+.snap-wrapper {
+  height: 300vh;
+  scroll-snap-align: start;
+}
+
+.snap {
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid var(--rule-light);
+  overflow: hidden;
+  /* clip-path clips GPU-composited layers (will-change:transform children)
+     where overflow:hidden alone fails in Chrome */
+  clip-path: inset(0);
+}
+
+.snap-heavy     { border-bottom: 3px solid var(--ink); }
+.snap-top-heavy { border-top: 3px solid var(--ink); border-bottom: none; }
+
+/* ============================
+   12-COLUMN PAGE GRID
+   ─────────────────────────────
+   Layer A (z-1)  : .hw — outer 3 cols, left OR right
+   Layer B (z-2)  : .content-cols — middle 8 cols (3→11)
+   Overlap zones  : col 3 (left) and col 10 (right)
+   ============================ */
+.page-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-template-rows: 1fr;
+  column-gap: var(--grid-gap);
+  max-width: var(--grid-max);
+  width: 100%;
+  padding: 0 var(--grid-pad);
+  margin: 0 auto;
+  height: 100%;
+}
+
+/* Middle 8 columns — main content */
+.content-cols {
+  grid-column: 3 / 11;
+  grid-row: 1;
+  align-self: center;
+  position: relative;
+  z-index: 2;
+  min-width: 0; /* prevent grid blowout */
+}
+
+/* ============================
+   HANDWRITTEN OVERLAYS
+   Grid items in the outer 3 cols.
+   align-self: end anchors to section bottom;
+   JS translateY drives the parallax rise.
+   ============================ */
+.hw {
+  grid-row: 1;
+  align-self: end;
+  z-index: 1;
+  position: relative;
+  font-family: var(--font-script);
+  font-weight: 600;
+  font-style: italic;
+  color: var(--accent);
+  opacity: 1;
+  pointer-events: none;
+  line-height: 1.3;
+  font-size: clamp(22px, 2.4vw, 38px);
+  will-change: transform;
+  padding-bottom: 8px;
+}
+
+.hw-left  {
+  grid-column: 1 / 4;
+  text-align: right;
+  padding-right: 16px;
+}
+
+.hw-right {
+  grid-column: 10 / 13;
+  text-align: left;
+  padding-left: 16px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hw { opacity: 0.18; }
+}
+
+/* ============================
+   INNER SECTION GRID (.sg)
+   kicker col (20px) + two content cols
+   ============================ */
+.sg {
+  display: grid;
+  grid-template-columns: 20px 1fr 1fr;
+  column-gap: 28px;
+}
+
+.sg-kicker {
+  grid-column: 1;
+  grid-row: 1 / 99;
+  writing-mode: vertical-lr;
+  font-family: var(--font-sans);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent);
+  align-self: start;
+  padding-top: 4px;
+}
+
+.sg-head {
+  grid-column: 2 / 4;
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--ink);
+}
+
+.sg-body-l {
+  grid-column: 2;
+  padding-top: 16px;
+  padding-right: 20px;
+  border-right: 1px solid var(--rule-light);
+}
+
+.sg-body-r {
+  grid-column: 3;
+  padding-top: 16px;
+}
+
+.sg-full { grid-column: 2 / 4; }
+
+/* ============================
+   HEADLINES & TYPE
+   ============================ */
+h2 {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(22px, 2.8vw, 36px);
+  line-height: 1.08;
+  color: var(--ink);
+}
+
+p {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink-light);
+  margin-bottom: 10px;
+}
+p:last-child { margin-bottom: 0; }
+
+p.lead {
+  font-size: 15px;
+  color: var(--ink);
+  line-height: 1.6;
+}
+
+/* ============================
+   CALLOUT / QUOTE
+   ============================ */
+.callout {
+  border-left: 3px solid var(--accent);
+  padding: 12px 16px;
+  background: var(--paper);
+  margin-top: 16px;
+}
+
+.callout-text {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(15px, 1.8vw, 20px);
+  line-height: 1.3;
+  color: var(--ink);
+}
+
+.quote-bar {
+  border-top: 3px solid var(--accent);
+  padding-top: 14px;
+  margin-top: 20px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(16px, 2vw, 22px);
+  line-height: 1.3;
+  color: var(--ink);
+}
+
+/* ============================
+   CREDENTIAL GRID
+   ============================ */
+.cred-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: 1px solid var(--rule-light);
+}
+
+.cred-item {
+  padding: 14px 16px 14px 0;
+  border-bottom: 1px solid var(--rule-light);
+}
+
+.cred-item:nth-child(even) {
+  padding-left: 16px;
+  padding-right: 0;
+  border-left: 1px solid var(--rule-light);
+}
+
+.cred-item:nth-last-child(-n+2) { border-bottom: none; }
+
+.cred-label {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--ink);
+  margin-bottom: 5px;
+}
+
+/* ============================
+   BELIEFS GRID
+   ============================ */
+.beliefs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  border-top: 2px solid var(--ink);
+  margin-top: 14px;
+}
+
+.belief-item {
+  padding: 14px;
+  border-right: 1px solid var(--rule-light);
+  border-bottom: 1px solid var(--rule-light);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(12px, 1.4vw, 15px);
+  line-height: 1.35;
+  color: var(--ink);
+}
+
+.belief-item:nth-child(3n) { border-right: none; }
+
+.belief-item.wide {
+  grid-column: 1 / -1;
+  border-right: none;
+  border-bottom: none;
+  border-top: 2px solid var(--ink);
+  font-size: clamp(15px, 2vw, 20px);
+  text-align: center;
+  padding: 18px 24px;
+  color: var(--accent);
+}
+
+.mid-cta {
+  margin-top: 14px;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.mid-cta a { color: var(--accent); text-decoration: none; }
+.mid-cta a:hover { text-decoration: underline; }
+
+/* ============================
+   CONTRAST GRID
+   ============================ */
+.contrast-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: 2px solid var(--ink);
+  border-bottom: 1px solid var(--rule-light);
+  margin-top: 16px;
+}
+
+.contrast-cell { padding: 14px 16px; }
+.contrast-cell:first-child { border-right: 1px solid var(--rule-light); }
+
+.contrast-cell h4 {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.contrast-cell.them h4 { color: var(--ink-mid); }
+.contrast-cell.them p  { color: var(--ink-mid); font-size: 13px; }
+.contrast-cell.us   h4 { color: var(--accent); }
+.contrast-cell.us   p  { color: var(--ink); font-size: 13px; }
+
+/* ============================
+   TEAM NOTE
+   ============================ */
+.team-note {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent);
+  border-top: 2px solid var(--ink);
+  padding-top: 14px;
+  margin-top: 4px;
+}
+
+/* ============================
+   CTA BUTTON
+   ============================ */
+.cta-button {
+  display: inline-block;
+  margin-top: 24px;
+  padding: 13px 48px;
+  background: var(--ink);
+  color: var(--cream);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: background 0.2s;
+}
+.cta-button:hover { background: var(--accent); }
+
+/* ============================
+   MASTHEAD (section 0)
+   ============================ */
+.masthead-snap { padding: 0; }
+
+.masthead-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: 100%;
+  padding: 40px 0;
+}
+
+.masthead-meta {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink-mid);
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--ink);
+}
+
+.masthead-title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(72px, 10vw, 130px);
+  letter-spacing: -3px;
+  line-height: 0.88;
+  color: var(--ink);
+  padding: 28px 0 20px;
+}
+
+.masthead-sub {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  color: var(--accent);
+  padding-bottom: 20px;
+}
+
+.masthead-rule {
+  width: 100%;
+  height: 3px;
+  background: var(--ink);
+}
+
+/* ============================
+   HERO (section 1)
+   ============================ */
+.hero-snap { padding: 0; }
+
+.hero-inner {
+  display: grid;
+  grid-template-columns: 20px 1fr 1fr;
+  column-gap: 28px;
+  border-top: 3px solid var(--ink);
+  padding-top: 28px;
+  width: 100%;
+}
+
+.hero-head {
+  grid-column: 2 / 4;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(30px, 4.5vw, 58px);
+  line-height: 1.06;
+  color: var(--ink);
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--rule-light);
+}
+
+.hero-kicker {
+  grid-column: 1;
+  grid-row: 1 / 99;
+  writing-mode: vertical-lr;
+  font-family: var(--font-sans);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent);
+  align-self: start;
+  padding-top: 6px;
+}
+
+.hero-sub {
+  grid-column: 2 / 4;
+  padding-top: 16px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink-light);
+}
+
+/* ============================
+   FOOTER
+   ============================ */
+footer {
+  min-height: 72px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px var(--grid-pad);
+  border-top: 1px solid var(--rule-light);
+}
+
+footer span, footer a {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--ink-mid);
+  text-transform: uppercase;
+  text-decoration: none;
+}
+footer a:hover { color: var(--accent); }
+
+/* ============================
+   RESPONSIVE
+   ============================ */
+/* ============================
+   TABLET  ≤ 900px
+   hw: absolute overlay, 33vw wide
+   ============================ */
+@media (max-width: 900px) {
+  .page-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+    column-gap: 0;
+    padding: 0;
+    height: 100%;
+    position: relative; /* containing block for absolute hw */
+  }
+
+  /* hw floats over content as absolute overlay */
+  .hw {
+    position: absolute;
+    bottom: 12px;
+    width: 33vw;
+    font-size: clamp(16px, 3vw, 26px);
+    align-self: auto;
+    padding-bottom: 0;
+    z-index: 3;
+  }
+
+  .hw-left {
+    grid-column: auto;
+    left: 16px;
+    right: auto;
+    text-align: left;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .hw-right {
+    grid-column: auto;
+    right: 16px;
+    left: auto;
+    text-align: left;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .content-cols {
+    grid-column: 1;
+    grid-row: 1;
+    padding: 28px 20px;
+    align-self: center;
+  }
+
+  .sg, .hero-inner { grid-template-columns: 1fr; }
+
+  .sg-kicker, .hero-kicker {
+    writing-mode: horizontal-tb;
+    grid-row: auto;
+    margin-bottom: 6px;
+  }
+
+  .sg-head, .sg-body-l, .sg-body-r, .sg-full,
+  .hero-head, .hero-sub {
+    grid-column: 1;
+    padding-left: 0;
+    padding-right: 0;
+    border-left: none;
+    border-right: none;
+  }
+
+  .sg-body-l {
+    border-right: none;
+    border-bottom: 1px solid var(--rule-light);
+    padding-bottom: 14px;
+  }
+
+  .beliefs-grid   { grid-template-columns: 1fr 1fr; }
+  .belief-item:nth-child(3n) { border-right: 1px solid var(--rule-light); }
+  .belief-item:nth-child(2n) { border-right: none; }
+
+  .contrast-grid  { grid-template-columns: 1fr; }
+  .contrast-cell:first-child { border-right: none; border-bottom: 1px solid var(--rule-light); }
+
+  .cred-grid      { grid-template-columns: 1fr; }
+  .cred-item:nth-child(even) { padding-left: 0; border-left: none; }
+  .cred-item { border-bottom: 1px solid var(--rule-light) !important; }
+
+  .masthead-title { font-size: clamp(36px, 10vw, 60px); padding: 16px 0 12px; }
+
+  footer { padding: 16px; flex-direction: column; gap: 6px; text-align: center; }
+}
+
+/* ============================
+   MOBILE  ≤ 600px
+   hw: 75vw wide, half the content gutter (10px),
+   in front of content (z-index: 10)
+   ============================ */
+@media (max-width: 600px) {
+  .hw {
+    width: 75vw;
+    font-size: clamp(20px, 6vw, 32px);
+    z-index: 10;
+  }
+
+  .hw-left  { left: 10px; }
+  .hw-right { right: 10px; }
+
+  .content-cols { z-index: 1; }
+}
+
+/* ============================
+   HERO HW  — larger callout variant
+   2× font size on desktop; full-width,
+   centered on mobile breakpoints.
+   Add .hw-hero alongside .hw-left / .hw-right.
+   ============================ */
+.hw-hero {
+  font-size: clamp(44px, 4.8vw, 76px);
+}
+
+/* Hidden until JS positions it. visibility:hidden is immune to GPU compositing
+   and cannot be escaped by will-change:transform the way overflow/clip-path can. */
+.hw-start-offscreen {
+  visibility: hidden;
+}
+
+@media (max-width: 900px) {
+  .hw-hero {
+    left: 16px;
+    right: 16px;
+    width: auto;
+    text-align: center;
+  }
+}
+
+@media (max-width: 600px) {
+  .hw-hero {
+    left: 10px;
+    right: 10px;
+    width: auto;
+    font-size: clamp(32px, 10vw, 56px);
+  }
+}
+
+/* ============================
+   SCROLLABLE SECTIONS  (JS-toggled)
+   Added by JS when .content-cols scrollHeight
+   exceeds the viewport. Removes the sticky/300vh
+   shell so content flows at natural height.
+   The next snap fires only after the bottom
+   of the section content is scrolled past.
+   ============================ */
+.snap--scrollable {
+  height: auto !important;
+  min-height: 100vh;
+  position: static !important;
+  overflow: visible !important;
+  clip-path: none !important;
+  align-items: flex-start !important;
+}
+
+.snap--scrollable .page-grid {
+  height: auto !important;
+  padding-top: 48px;
+  padding-bottom: 48px;
+}
+</style>
+</head>
+<body>
+
+<!-- ============================
+     0. MASTHEAD — hw LEFT
+     ============================ -->
+<div class="snap-wrapper">
+<header class="snap masthead-snap snap-heavy snap-no-scroll">
+  <div class="page-grid">
+    <div class="hw hw-left hw-hero hw-start-offscreen" style="--hw-rot: 1.5deg;">the truth about AI.</div>
+    <div class="content-cols masthead-content">
+      <div class="masthead-meta">
+        <span>AI Transformation for Operators</span>
+        <span>getsharper.ai</span>
+      </div>
+      <div class="masthead-title">Sharper AI</div>
+      <div class="masthead-sub">A Manifesto</div>
+      <div class="masthead-rule"></div>
+    </div>
+  </div>
+</header>
+</div>
+
+<!-- ============================
+     1. HERO — hw RIGHT
+     ============================ -->
+<div class="snap-wrapper">
+<section class="snap hero-snap">
+  <div class="page-grid">
+    <div class="content-cols">
+      <div class="hero-inner">
+        <div class="hero-kicker">The Case</div>
+        <h1 class="hero-head">Everyone's selling you AI. Nobody's making it&nbsp;stick.</h1>
+        <p class="hero-sub">We embed inside your company. We find the drag. We rebuild how your people operate. Then we make sure it holds. That's a different thing than what you've been buying.</p>
+      </div>
+    </div>
+    <div class="hw hw-right" style="--hw-rot: -2deg;">this is different.</div>
+  </div>
+</section>
+</div>
+
+<!-- ============================
+     2. THE PROBLEM — hw LEFT
+     ============================ -->
+<div class="snap-wrapper">
+<section class="snap">
+  <div class="page-grid">
+    <div class="hw hw-left" style="--hw-rot: 2.5deg;">That's not transformation. That's theater.</div>
+    <div class="content-cols">
+      <div class="sg">
+        <div class="sg-kicker">The Problem</div>
+        <div class="sg-head">
+          <h2>It always breaks in the same place</h2>
+        </div>
+        <div class="sg-body-l">
+          <p>Someone pitched your leadership team on AI. Maybe it was a consultant. Maybe it was your CTO. Maybe you brought in a vendor who ran a workshop, handed over a slide deck, and disappeared.</p>
+          <p>Your team got excited for a week. Then nothing changed.</p>
+        </div>
+        <div class="sg-body-r">
+          <p>This is happening everywhere. Companies are spending real money on AI initiatives that produce nothing but a Slack channel nobody checks and a handful of people using ChatGPT to rewrite emails.</p>
+          <p>AI doesn't fail because the technology doesn't work. It fails because the implementation has no spine.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- ============================
+     3. CREDIBILITY — hw RIGHT
+     ============================ -->
+<div class="snap-wrapper">
+<section class="snap">
+  <div class="page-grid">
+    <div class="content-cols">
+      <div class="sg">
+        <div class="sg-kicker">Who We Are</div>
+        <div class="sg-head">
+          <h2>The people selling you AI transformation have never transformed&nbsp;anything.</h2>
+        </div>
+        <div class="sg-full" style="padding-top: 4px; padding-bottom: 12px;">
+          <p class="lead">We have. Here's why that matters.</p>
+        </div>
+        <div class="sg-full">
+          <div class="cred-grid">
+            <div class="cred-item">
+              <div class="cred-label">We've run companies.</div>
+              <p>CEO and COO. Scaled teams, navigated hard pivots, made payroll when the math was ugly. We know what it feels like to bet on something that has to work.</p>
+            </div>
+            <div class="cred-item">
+              <div class="cred-label">We've built products.</div>
+              <p>We come from tech and product backgrounds. We've shipped software, designed systems, and managed the gap between what a tool promises and what it actually does inside a real organization.</p>
+            </div>
+            <div class="cred-item">
+              <div class="cred-label">We've been in AI since before it was a boardroom topic.</div>
+              <p>Machine learning, generative AI, applied automation — when it was a technical discipline, not a marketing category. We know what's real, what's hype, and what will matter in 18 months.</p>
+            </div>
+            <div class="cred-item">
+              <div class="cred-label">We've cleaned up the mess.</div>
+              <p>We've walked into companies where the first AI initiative failed. We know what a failed implementation looks like from the inside. That's not theory. That's pattern recognition from doing the work.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="hw hw-right" style="--hw-rot: -1.8deg;">we've been in this room.</div>
+  </div>
+</section>
+</div>
+
+<!-- ============================
+     4. THE OPPORTUNITY — hw LEFT
+     ============================ -->
+<div class="snap-wrapper">
+<section class="snap">
+  <div class="page-grid">
+    <div class="hw hw-left" style="--hw-rot: 2deg;">makes it stick.</div>
+    <div class="content-cols">
+      <div class="sg">
+        <div class="sg-kicker">The Opportunity</div>
+        <div class="sg-head">
+          <h2>You're closer than you think</h2>
+        </div>
+        <div class="sg-body-l">
+          <p>Here's what the AI industry doesn't want you to know: this isn't a moonshot. It feels hard because it's new. But the path from where you are now to AI running through your entire operation is learnable, repeatable, and faster than most people expect.</p>
+          <p>The companies that stall aren't protecting themselves. They're compounding the gap. Every week you wait, the companies that figured this out pull further ahead. Not because they have better tools. Because their people think differently.</p>
+        </div>
+        <div class="sg-body-r">
+          <p>And it's not as risky as your instincts are telling you. The real discipline isn't avoiding AI. It's implementing it with human accountability baked into every workstream.</p>
+          <p>Your business strategy, your product, your team, your instincts about what works — none of that goes away. AI layers on top of everything you've already built. It doesn't erase your competitive advantage. It compounds it.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- ============================
+     5. BELIEFS — hw RIGHT
+     ============================ -->
+<div class="snap-wrapper">
+<section class="snap">
+  <div class="page-grid">
+    <div class="content-cols">
+      <div class="sg">
+        <div class="sg-kicker">Our Convictions</div>
+        <div class="sg-head">
+          <h2>What we believe</h2>
+        </div>
+        <div class="sg-full">
+          <div class="beliefs-grid">
+            <div class="belief-item">Your team is not using AI. They're playing with it. There's a difference, and it's costing you real money every week.</div>
+            <div class="belief-item">Most AI training is content marketing disguised as education.</div>
+            <div class="belief-item">If the executive team isn't leading AI adoption, nobody is.</div>
+            <div class="belief-item">AI doesn't replace your people. It exposes which ones were coasting.</div>
+            <div class="belief-item">You don't need more tools. You need someone to rewire how your team works.</div>
+            <div class="belief-item">The window to get this right is closing. The companies that build AI into their operations now will be untouchable in two years.</div>
+            <div class="belief-item wide">We'd rather work with five companies that go all in than fifty that dabble.</div>
+          </div>
+        </div>
+        <div class="sg-full">
+          <div class="mid-cta">
+            <a href="https://calendly.com/thechrisdumas/30min" target="_blank">If this already resonates, let's skip ahead →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="hw hw-right" style="--hw-rot: -2.5deg;">no compromises.</div>
+  </div>
+</section>
+</div>
+
+<!-- ============================
+     6. EMBEDDED VS EXTERNAL — hw LEFT
+     ============================ -->
+<div class="snap-wrapper">
+<section class="snap">
+  <div class="page-grid">
+    <div class="hw hw-left" style="--hw-rot: 1.8deg;">Embedded > External. You will feel the difference.</div>
+    <div class="content-cols">
+      <div class="sg">
+        <div class="sg-kicker">The Difference</div>
+        <div class="sg-head">
+          <h2>There's a reason nothing changed last time</h2>
+        </div>
+        <div class="sg-body-l">
+          <p>Most AI companies work like this: they come in, run a session, leave materials, and send an invoice. Their work ends where yours begins. You're left trying to turn a workshop into an operating change with no support, no system, and no accountability.</p>
+          <p>That's external. That's what you've been buying.</p>
+        </div>
+        <div class="sg-body-r">
+          <div class="contrast-grid">
+            <div class="contrast-cell them">
+              <h4>External</h4>
+              <p>Shows up for a day. Presents to your team. Leaves a slide deck. Moves on. You figure out the hard part alone.</p>
+            </div>
+            <div class="contrast-cell us">
+              <h4>Embedded</h4>
+              <p>Moves in for weeks. Works alongside your people. Rebuilds workflows in context. Stays until the change holds.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- ============================
+     7. HOW WE WORK — hw RIGHT
+     ============================ -->
+<div class="snap-wrapper">
+<section class="snap">
+  <div class="page-grid">
+    <div class="content-cols">
+      <div class="sg">
+        <div class="sg-kicker">The Engagement</div>
+        <div class="sg-head">
+          <h2>How this works</h2>
+        </div>
+        <div class="sg-body-l">
+          <p>We take on a small number of companies at a time. Single digits. Every engagement gets our senior team, not a bench of juniors running a playbook.</p>
+          <p>We start with your leadership. A two-day intensive where your executive team gets aligned on what AI actually changes for your business, what to prioritize, and what to ignore. No theory. Decisions and a 90-day plan.</p>
+        </div>
+        <div class="sg-body-r">
+          <p>Then we embed. We work inside your company for weeks, not hours. We map your workflows, retrain your people in the context of their actual jobs, build the automations that matter, and put measurement in place so you can see what's working.</p>
+          <p>We stay until it sticks. That's the commitment we make.</p>
+        </div>
+      </div>
+    </div>
+    <div class="hw hw-right" style="--hw-rot: -2deg;">we're expensive because it works.</div>
+  </div>
+</section>
+</div>
+
+<!-- ============================
+     8. THE COMMITMENT — hw LEFT
+     ============================ -->
+<div class="snap-wrapper">
+<section class="snap">
+  <div class="page-grid">
+    <div class="hw hw-left" style="--hw-rot: 2.2deg;">done with the half-measures.</div>
+    <div class="content-cols">
+      <div class="sg">
+        <div class="sg-kicker">The Commitment</div>
+        <div class="sg-head">
+          <h2>We will also say no to you.</h2>
+        </div>
+        <div class="sg-body-l">
+          <p>If your executive team isn't in the room, we pass. If you want a half-day workshop so you can check a box, we pass. If your idea of AI transformation is buying Copilot licenses and hoping for the best, we pass.</p>
+        </div>
+        <div class="sg-body-r">
+          <p>We need commitment. Real commitment. The kind where you're willing to let us tell your team that how they've been working isn't good enough anymore.</p>
+          <p>The companies that get the most from this engagement are the ones who decide, before we start, that they're done with the half-measures.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- ============================
+     9. TEAM — hw RIGHT
+     ============================ -->
+<div class="snap-wrapper">
+<section class="snap">
+  <div class="page-grid">
+    <div class="content-cols">
+      <div class="sg">
+        <div class="sg-kicker">The Team</div>
+        <div class="sg-head">
+          <h2>Who does the work</h2>
+        </div>
+        <div class="sg-body-l">
+          <p>This isn't a firm where you talk to the senior partner and get handed to someone you've never met.</p>
+          <p>Chris Dumas is our founder. Former CEO and COO who's scaled companies from the inside. He touches every engagement because he gives a shit about you, your team, and your company. He's the person in the room with your leadership team and the person in the workflows with your people.</p>
+        </div>
+        <div class="sg-body-r">
+          <p>The team around him has built products you've used, led organizations you'd recognize, and shipped AI systems that actually run in production. They come from operations, engineering, and product backgrounds.</p>
+          <p>You meet your team before anything starts. They're dedicated to your engagement. Not split across a dozen accounts. Not swapped out halfway through.</p>
+        </div>
+      </div>
+    </div>
+    <div class="hw hw-right" style="--hw-rot: -1.5deg;">No juniors. No subcontractors. No bait and switch.</div>
+  </div>
+</section>
+</div>
+
+<!-- ============================
+     10. CTA — hw LEFT
+     ============================ -->
+<div class="snap-wrapper">
+<section class="snap snap-top-heavy">
+  <div class="page-grid">
+    <div class="hw hw-left hw-hero" style="--hw-rot: 2deg;">let's find out.</div>
+    <div class="content-cols" style="text-align: center;">
+      <h2 style="font-size: clamp(28px, 4vw, 48px); margin-bottom: 14px;">Are we a good fit?</h2>
+      <p style="font-size: 15px; color: var(--ink-light); margin-bottom: 8px;">Not every company is ready for this. That's fine. We'd rather have an honest conversation now than waste your time later.</p>
+      <p style="font-size: 15px; color: var(--ink-light);">No pitch. No slide deck. Just two people who run businesses figuring out if this is worth doing together.</p>
+      <a href="https://calendly.com/thechrisdumas/30min" class="cta-button" target="_blank">Let's Talk</a>
+    </div>
+  </div>
+</section>
+</div>
+
+<footer>
+  <span>Sharper AI</span>
+  <a href="mailto:chris@getsharper.ai">chris@getsharper.ai</a>
+</footer>
+
+<script>
+  // Single controller: checkOverflow always runs before update so section
+  // types are correct before transforms are calculated.
+  (function () {
+    const hwEls = document.querySelectorAll('.hw');
+    let rafId = null;
+
+    // ── Overflow detection ────────────────────────────────────────────
+    function checkOverflow() {
+      const VH = window.innerHeight;
+      document.querySelectorAll('.snap').forEach(section => {
+        if (section.classList.contains('snap-no-scroll')) return;
+        const contentCols = section.querySelector('.content-cols');
+        if (!contentCols) return;
+        const overflows = contentCols.scrollHeight > VH - 80;
+        const isScrollable = section.classList.contains('snap--scrollable');
+        const wrapper = section.parentElement;
+        if (overflows && !isScrollable) {
+          section.classList.add('snap--scrollable');
+          if (wrapper?.classList.contains('snap-wrapper')) {
+            wrapper.style.height = 'auto';
+            wrapper.style.minHeight = '100vh';
+          }
+        } else if (!overflows && isScrollable) {
+          section.classList.remove('snap--scrollable');
+          if (wrapper?.classList.contains('snap-wrapper')) {
+            wrapper.style.height = '';
+            wrapper.style.minHeight = '';
+          }
+        }
+      });
+    }
+
+    // ── Parallax update ───────────────────────────────────────────────
+    function update() {
+      const VH = window.innerHeight;
+      hwEls.forEach(hw => {
+        const section = hw.closest('.snap');
+        const wrapper = section ? section.parentElement : null;
+        if (!wrapper) return;
+        const rotBase = parseFloat(
+          getComputedStyle(hw).getPropertyValue('--hw-rot').trim()
+        ) || -2;
+        const rot = rotBase * (window.innerWidth <= 600 ? 3 : 1);
+
+        let progress, travelY;
+        if (section.classList.contains('snap--scrollable')) {
+          const rect = section.getBoundingClientRect();
+          const sectionH = section.offsetHeight;
+          progress = Math.max(0, Math.min(1, (VH - rect.top) / (sectionH + VH)));
+          travelY = sectionH * 0.9;
+        } else {
+          const rect = wrapper.getBoundingClientRect();
+          progress = Math.max(0, Math.min(1, -rect.top / (VH * 2)));
+          if (hw.classList.contains('hw-start-offscreen')) {
+            // Set transform first (off-screen at progress=0), then reveal.
+            // visibility:hidden in CSS is immune to GPU compositing escapes.
+            hw.style.transform = `translateY(${VH - progress * VH * 1.75}px) rotate(${rot}deg)`;
+            hw.style.visibility = 'visible';
+            return;
+          }
+          travelY = VH * 0.75;
+        }
+        hw.style.transform = `translateY(${-progress * travelY}px) rotate(${rot}deg)`;
+      });
+      rafId = null;
+    }
+
+    // ── Tick: checkOverflow then update ───────────────────────────────
+    function tick() {
+      checkOverflow();
+      update();
+      rafId = null;
+    }
+
+    window.addEventListener('scroll', () => {
+      if (!rafId) rafId = requestAnimationFrame(update);
+    }, { passive: true });
+
+    window.addEventListener('resize', () => {
+      if (!rafId) rafId = requestAnimationFrame(tick);
+    }, { passive: true });
+
+    // Wait for fonts + layout before first tick so measurements are accurate.
+    // document.fonts.ready resolves after all fonts (including typekit) are loaded,
+    // then rAF defers until the browser has done the layout pass.
+    function initWhenReady() {
+      // Double rAF: first fires before next paint (layout may still be in progress),
+      // second fires after that paint is committed — layout is guaranteed stable.
+      requestAnimationFrame(() => requestAnimationFrame(tick));
+    }
+
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(initWhenReady);
+    } else if (document.readyState === 'complete') {
+      initWhenReady();
+    } else {
+      window.addEventListener('load', initWhenReady);
+    }
+  }());
+</script>
+</body>
+</html>

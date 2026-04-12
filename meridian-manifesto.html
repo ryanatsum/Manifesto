@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meridian — Manifesto</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Archivo:wght@400;500;700;900&family=Nothing+You+Could+Do&display=swap" rel="stylesheet">
+  <style>
+    /* ─── Tokens ─── */
+    :root {
+      --navy:       #060B13;
+      --navy-mid:   #0D1A2E;
+      --amber:      #F5A124;
+      --warm-white: #F5F1EB;
+      --ink:        #0E121B;
+      --steel:      #66718A;
+      --mist:       #E8E2D9;
+      --white:      #FFFFFF;
+      --font-display: 'Instrument Serif', serif;
+      --font-body:    'Archivo', sans-serif;
+      --font-script:  'Nothing You Could Do', cursive;
+
+      /* 12-col grid */
+      --grid-cols:  12;
+      --grid-gap:   24px;
+      --grid-max:   1440px;
+      --grid-pad:   48px;
+
+      --dur-fast:   150ms;
+      --dur-base:   300ms;
+      --dur-slow:   700ms;
+      --ease-out:   cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--navy);
+      color: var(--warm-white);
+      font-family: var(--font-body);
+      overflow-x: hidden;
+    }
+
+    /* ─── Nav ─── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 300;
+      padding: 22px var(--grid-pad);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(6, 11, 19, 0.90);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(245, 241, 235, 0.07);
+    }
+
+    .logo {
+      font-family: var(--font-body);
+      font-weight: 900;
+      font-size: 20px;
+      letter-spacing: 1.2px;
+      color: var(--white);
+      text-transform: uppercase;
+    }
+    .logo span { color: var(--amber); }
+
+    .nav-label {
+      font-family: var(--font-body);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--steel);
+    }
+
+    /* ─── Hero ─── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 140px var(--grid-pad) 100px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 80% 55% at 50% 40%, rgba(245,161,36,0.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-inner {
+      max-width: 960px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .eyebrow {
+      font-family: var(--font-body);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--amber);
+      display: block;
+      margin-bottom: 36px;
+    }
+
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(44px, 7vw, 100px);
+      font-weight: 400;
+      letter-spacing: -2px;
+      line-height: 1.04;
+      color: var(--warm-white);
+      margin-bottom: 36px;
+    }
+
+    .hero-sub {
+      font-family: var(--font-body);
+      font-size: 17px;
+      line-height: 1.75;
+      color: var(--steel);
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .amber-line {
+      width: 36px;
+      height: 2px;
+      background: var(--amber);
+      margin: 56px auto 0;
+    }
+
+    .hero-inner > * {
+      animation: fadeUp var(--dur-slow) var(--ease-out) both;
+    }
+    .hero-inner > *:nth-child(1) { animation-delay: 200ms; }
+    .hero-inner > *:nth-child(2) { animation-delay: 360ms; }
+    .hero-inner > *:nth-child(3) { animation-delay: 500ms; }
+    .hero-inner > *:nth-child(4) { animation-delay: 650ms; }
+
+    /* ═══════════════════════════════════════════════════════════════
+       12-COLUMN LAYOUT — two independent layers stacked in wrapper
+       ─────────────────────────────────────────────────────────────
+       Layer A  z-index 5   quotes-overlay (position: absolute)
+                              └─ quotes-mirror grid (same cols/gap)
+                                   ├─ .ql  cols 1–4  (left quotes)
+                                   └─ .qr  cols 9–12 (right quotes)
+
+       Layer B  z-index 10  manifesto-grid (position: relative)
+                              └─ .manifesto-content  cols 3–10
+
+       Cols 3–4 and 9–10 = structural overlap zones
+    ═══════════════════════════════════════════════════════════════ */
+
+    .manifesto-wrapper {
+      background: var(--navy);
+      position: relative;
+    }
+
+    /* ── Layer A: quote overlay — BEHIND content ── */
+    .quotes-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 5;          /* behind content layer */
+      pointer-events: none;
+    }
+
+    /* Mirror the same 12-col grid so quotes align perfectly.
+       grid-template-rows: 1fr forces the single row to fill the full
+       container height — without it, rows with only position:absolute
+       children collapse to 0px, breaking all top:X% quote positions. */
+    .quotes-mirror {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      grid-template-rows: 1fr;   /* ← fills full overlay height */
+      column-gap: var(--grid-gap);
+      max-width: var(--grid-max);
+      margin: 0 auto;
+      padding: 0 var(--grid-pad);
+      height: 100%;
+    }
+
+    .ql {
+      grid-column: 1 / 5;   /* cols 1–4, overlaps content cols 3–4 */
+      position: relative;
+      height: 100%;          /* ← inherit the 1fr row height */
+    }
+    .qr {
+      grid-column: 9 / 13;  /* cols 9–12, overlaps content cols 9–10 */
+      position: relative;
+      height: 100%;          /* ← inherit the 1fr row height */
+    }
+
+    /* ── Layer B: content grid — IN FRONT of quotes ── */
+    .manifesto-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      column-gap: var(--grid-gap);
+      max-width: var(--grid-max);
+      margin: 0 auto;
+      padding: 0 var(--grid-pad);
+      position: relative;
+      z-index: 10;         /* in front of quote layer */
+    }
+
+    .manifesto-content {
+      grid-column: 3 / 11; /* centre 8 cols */
+      padding: 140px 0 180px;
+    }
+
+    /* ─── Manifesto typography ─── */
+    .manifesto-section { margin-bottom: 108px; }
+
+    .section-number {
+      font-family: var(--font-body);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--amber);
+      display: block;
+      margin-bottom: 20px;
+    }
+
+    .manifesto-section h2 {
+      font-family: var(--font-display);
+      font-size: clamp(26px, 3vw, 42px);
+      font-weight: 400;
+      letter-spacing: -0.8px;
+      line-height: 1.15;
+      color: var(--warm-white);
+      margin-bottom: 28px;
+    }
+
+    .manifesto-section h3 {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 400;
+      letter-spacing: -0.3px;
+      line-height: 1.3;
+      color: rgba(245, 241, 235, 0.70);
+      margin-top: 48px;
+      margin-bottom: 16px;
+    }
+
+    /* ↓ Body text made lighter ↓ */
+    .manifesto-section p {
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.85;
+      color: rgba(245, 241, 235, 0.38);
+      margin-bottom: 20px;
+    }
+
+    .manifesto-divider {
+      width: 100%;
+      height: 1px;
+      background: rgba(245, 241, 235, 0.06);
+      margin-bottom: 108px;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       PARALLAX BLOCK QUOTES
+       Primary:  CSS Scroll-Driven Animations — runs off the main
+                 thread, frame-perfect, zero JS jank.
+       Fallback: rAF + clamped offset for Safari / older browsers.
+    ═══════════════════════════════════════════════════════════════ */
+
+    .pquote {
+      position: absolute;
+      font-family: var(--font-script);
+      color: var(--amber);
+      opacity: 0.82;
+      line-height: 1.3;
+      pointer-events: none;
+      width: 100%;
+    }
+
+    .ql .pquote { right: 0; text-align: right; }
+    .qr .pquote { left: 0;  text-align: left;  }
+
+    /* Base positions + rotations + sizes */
+    .pquote-1 { font-size: clamp(28px, 3vw,   53px); top:  5%; transform: rotate(-3deg);   }
+    .pquote-2 { font-size: clamp(28px, 3vw,   53px); top: 24%; transform: rotate(2.5deg);  }
+    .pquote-3 { font-size: clamp(25px, 2.6vw, 45px); top: 47%; transform: rotate(-2deg);   }
+    .pquote-4 { display: none; }
+    .pquote-5 { display: none; }
+
+    /* ── CSS Scroll-Driven Animations (Chrome 115+) ──────────────────
+       Each quote animates from translateY(0) → translateY(Npx) over
+       the page scroll range starting when the manifesto section enters
+       view (~16 % of total scroll). Different N values = different
+       apparent scroll speeds = genuine depth layering.
+       Rotations are preserved in every keyframe so they're never lost. */
+    @supports (animation-timeline: scroll()) {
+
+      /* translateY target determines apparent scroll speed:
+           apparent speed = (3650 − N) ÷ 3650
+         pq1  N=1800 → ~51% content speed
+         pq2  N=2400 → ~34% content speed  (slowest — most "background")
+         pq3  N=1500 → ~59% content speed
+         pq4  N=2200 → ~40% content speed
+         pq5  N=1700 → ~53% content speed                               */
+      @keyframes pq1 {
+        from { transform: translateY(0px)    rotate(-3deg);   }
+        to   { transform: translateY(1800px) rotate(-3deg);   }
+      }
+      @keyframes pq2 {
+        from { transform: translateY(0px)    rotate(2.5deg);  }
+        to   { transform: translateY(2400px) rotate(2.5deg);  }
+      }
+      @keyframes pq3 {
+        from { transform: translateY(0px)    rotate(-2deg);   }
+        to   { transform: translateY(1500px) rotate(-2deg);   }
+      }
+      /* animation-range 16% = approx. when wrapper (offsetTop ~716px)
+         enters the viewport on a ~4345px max-scroll page             */
+      .pquote-1 {
+        animation: pq1 linear both;
+        animation-timeline: scroll(root);
+        animation-range: 16% 100%;
+      }
+      .pquote-2 {
+        animation: pq2 linear both;
+        animation-timeline: scroll(root);
+        animation-range: 16% 100%;
+      }
+      .pquote-3 {
+        animation: pq3 linear both;
+        animation-timeline: scroll(root);
+        animation-range: 16% 100%;
+      }
+    }
+
+    /* ─── Closing ─── */
+    .closing {
+      background: var(--navy-mid);
+      padding: 140px var(--grid-pad);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .closing::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(245,161,36,0.05) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .closing-inner {
+      max-width: 660px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 2;
+    }
+
+    .closing h2 {
+      font-family: var(--font-display);
+      font-size: clamp(32px, 5vw, 64px);
+      font-weight: 400;
+      letter-spacing: -1.5px;
+      line-height: 1.1;
+      color: var(--warm-white);
+      margin-bottom: 28px;
+    }
+
+    .closing p {
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.8;
+      color: var(--steel);
+      margin-bottom: 48px;
+    }
+
+    .btn-primary {
+      display: inline-block;
+      font-family: var(--font-body);
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 1.1px;
+      text-transform: uppercase;
+      background: var(--amber);
+      color: var(--navy);
+      padding: 14px 36px;
+      text-decoration: none;
+      transition: transform var(--dur-base) var(--ease-spring);
+    }
+    .btn-primary:hover  { transform: scale(1.03); }
+    .btn-primary:active { transform: scale(0.97); }
+
+    /* ─── Footer ─── */
+    footer {
+      background: var(--navy);
+      padding: 48px var(--grid-pad);
+      border-top: 1px solid rgba(245, 241, 235, 0.07);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .footer-logo {
+      font-family: var(--font-body);
+      font-weight: 900;
+      font-size: 16px;
+      letter-spacing: 1.2px;
+      color: var(--white);
+      text-transform: uppercase;
+    }
+
+    .footer-copy {
+      font-family: var(--font-body);
+      font-size: 12px;
+      color: var(--steel);
+    }
+
+    /* ─── Scroll reveal ─── */
+    .scroll-item {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity var(--dur-slow) var(--ease-out),
+                  transform var(--dur-slow) var(--ease-out);
+    }
+    .scroll-item.visible { opacity: 1; transform: translateY(0); }
+    .scroll-item:nth-child(2) { transition-delay: 70ms; }
+    .scroll-item:nth-child(3) { transition-delay: 140ms; }
+    .scroll-item:nth-child(4) { transition-delay: 210ms; }
+    .scroll-item:nth-child(5) { transition-delay: 280ms; }
+    .scroll-item:nth-child(6) { transition-delay: 350ms; }
+    .scroll-item:nth-child(7) { transition-delay: 420ms; }
+
+    /* ─── Keyframes ─── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* ─── Responsive: tighten grid at ≤1200px ─── */
+    @media (max-width: 1200px) {
+      :root {
+        --grid-pad: 32px;
+        --grid-gap: 16px;
+      }
+    }
+
+    /* Collapse to single column at ≤720px */
+    @media (max-width: 720px) {
+      :root { --grid-pad: 24px; }
+
+      nav { padding: 20px 24px; }
+
+      .manifesto-grid {
+        display: block;
+        padding: 0 24px;
+      }
+
+      .manifesto-content {
+        padding: 80px 0 100px;
+      }
+
+      /* Hide quote overlay on mobile */
+      .quotes-overlay { display: none; }
+
+      footer {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+        padding: 40px 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Nav ── -->
+  <nav>
+    <div class="logo">Meridian<span>.</span></div>
+    <span class="nav-label">Manifesto — 2025</span>
+  </nav>
+
+  <!-- ── Hero ── -->
+  <section class="hero">
+    <div class="hero-inner">
+      <span class="eyebrow">Meridian AI — A Statement of Intent</span>
+      <h1>We are here<br>to augment what<br>it means to think.</h1>
+      <p class="hero-sub">This is our manifesto. A statement of belief, responsibility, and direction. Not a roadmap — a reckoning.</p>
+      <div class="amber-line"></div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       12-COLUMN MANIFESTO + PARALLAX QUOTES
+       Layer A (z-5,  absolute): quotes-overlay
+         .ql  cols 1–4   left quotes
+         .qr  cols 9–12  right quotes
+       Layer B (z-10, relative): manifesto-grid
+         .manifesto-content  cols 3–10
+       Overlap zones: cols 3–4 (left) and cols 9–10 (right)
+  ═══════════════════════════════════════════════════════════════ -->
+  <section class="manifesto-wrapper" id="manifesto">
+
+    <!-- ── Layer A: quote overlay (behind content) ── -->
+    <div class="quotes-overlay" aria-hidden="true">
+      <div class="quotes-mirror">
+        <!-- Left: cols 1–4 -->
+        <div class="ql">
+          <div class="pquote pquote-1" data-speed="0.30">"Intelligence is not a destination."</div>
+          <div class="pquote pquote-3" data-speed="0.18">"The machine learns. So do we."</div>
+        </div>
+        <!-- Right: cols 9–12 -->
+        <div class="qr">
+          <div class="pquote pquote-2" data-speed="0.46">"We build what we cannot yet imagine."</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Layer B: content grid (in front of quotes) ── -->
+    <div class="manifesto-grid">
+      <div class="manifesto-content">
+
+        <div class="manifesto-section scroll-item">
+          <span class="section-number">01 — On Intelligence</span>
+          <h2>Intelligence is not a property of machines.</h2>
+          <p>We have spent decades confusing capability for cognition. Speed for understanding. Pattern for meaning. The models we build do not think — they approximate. And in that approximation, they reflect everything we have ever written, believed, feared, and hoped.</p>
+          <p>This is not a limitation. It is a mirror. And like all mirrors, what we see in it depends entirely on who is looking.</p>
+          <h3>The measure of intelligence</h3>
+          <p>We do not believe intelligence should be measured by what a machine can do alone. We measure it by what becomes possible when humans and machines reason together. The bar is not Turing. The bar is us, extended — sharper, faster, more precise, but still unmistakably human in its aims.</p>
+        </div>
+
+        <div class="manifesto-divider scroll-item"></div>
+
+        <div class="manifesto-section scroll-item">
+          <span class="section-number">02 — On Responsibility</span>
+          <h2>To build is to be accountable.</h2>
+          <p>Every system we deploy carries weight. It carries the weight of the decisions it will shape, the voices it will amplify, and the futures it will make more or less possible. We do not get to opt out of this by calling it neutral technology.</p>
+          <p>There is no neutral. There is only deliberate or careless. We choose deliberate — every time, in every line of code, in every product decision, in every conversation we choose not to have because the model wasn't ready.</p>
+          <h3>What we owe</h3>
+          <p>We owe our users transparency about what our systems can and cannot do. We owe our society a rigorous commitment to harm reduction. We owe ourselves the intellectual honesty to admit when we are wrong, retrain, and return. Accountability is not a PR posture. It is an engineering requirement.</p>
+        </div>
+
+        <div class="manifesto-divider scroll-item"></div>
+
+        <div class="manifesto-section scroll-item">
+          <span class="section-number">03 — On Augmentation</span>
+          <h2>We do not build to replace. We build to extend.</h2>
+          <p>The most profound advances in human history did not make humans obsolete. Writing externalised memory. Mathematics formalised intuition. The internet distributed knowledge. Each tool made the human more capable — not less necessary.</p>
+          <p>We believe AI belongs in this lineage. Not as a replacement for judgment, creativity, or care — but as infrastructure for them.</p>
+          <h3>The human remains the point</h3>
+          <p>When a doctor uses our system to surface a pattern they missed, they are still the doctor. When a writer uses our tools to break through a block, they are still the writer. The thought belongs to the person. We are the shovel, not the gardener. We will never let this be reversed.</p>
+        </div>
+
+        <div class="manifesto-divider scroll-item"></div>
+
+        <div class="manifesto-section scroll-item">
+          <span class="section-number">04 — On the Unknown</span>
+          <h2>We build what we cannot yet fully see.</h2>
+          <p>We would be lying if we claimed complete certainty about where this leads. No one in this field can. The trajectory is real, the implications are vast, and the timelines compress faster than our moral reasoning often keeps pace with.</p>
+          <p>We accept this uncertainty not as a reason to slow down, but as a reason to stay awake. To keep asking. To keep checking our assumptions against the world as it actually is — not as we modelled it to be last quarter.</p>
+          <h3>Intellectual humility as practice</h3>
+          <p>Our best researchers hold two things simultaneously: total conviction in the importance of the work, and total openness to being wrong about how to do it. We hire for this. We build culture around this. Certainty is a red flag. Rigour is the goal.</p>
+        </div>
+
+        <div class="manifesto-divider scroll-item"></div>
+
+        <div class="manifesto-section scroll-item">
+          <span class="section-number">05 — On the Future</span>
+          <h2>This is only the beginning of the beginning.</h2>
+          <p>What we have built so far is a foundation. What we are building now will become the platform on which the next decade of human ingenuity stands. That weight is not abstract. It shows up in every deployment decision, every safety review, every product sprint.</p>
+          <p>We do not romanticise this work. We take it seriously. The future is not inevitable — it is made, incrementally, by choices. We intend to make good ones. And when we do not, we intend to say so.</p>
+          <h3>Our commitment</h3>
+          <p>We commit to remaining students of what we build. We commit to the people who use what we make. We commit to the generations who will inherit the systems we set in motion. And we commit to the idea that intelligence, amplified correctly, is one of the most hopeful things a species can attempt.</p>
+        </div>
+
+      </div><!-- /manifesto-content -->
+    </div><!-- /manifesto-grid -->
+
+  </section>
+
+  <!-- ── Closing ── -->
+  <section class="closing">
+    <div class="closing-inner">
+      <span class="eyebrow" style="display:block;margin-bottom:28px;letter-spacing:2.5px;">Meridian — Est. 2022</span>
+      <h2>Join us in building what comes next.</h2>
+      <p>We are a small team with an outsized sense of responsibility. If this reads like the company you want to build — or work within — we want to hear from you.</p>
+      <a href="#" class="btn-primary">Get in Touch &nbsp;→</a>
+    </div>
+  </section>
+
+  <!-- ── Footer ── -->
+  <footer>
+    <div class="footer-logo">Meridian<span style="color:var(--amber);">.</span></div>
+    <span class="footer-copy">© 2025 Meridian AI. All rights reserved.</span>
+  </footer>
+
+  <script>
+    // ── Parallax fallback (Safari / browsers without CSS SDA) ─────────
+    // If CSS Scroll-Driven Animations are supported the @supports block
+    // in the stylesheet handles everything off the main thread — no JS
+    // needed. This block only runs on unsupported browsers.
+    //
+    // Formula: offset = max(0, scrollY − wrapTop) × (1 − speed)
+    //   Clamped to 0 so quotes never blast upward into the hero.
+    if (!CSS.supports('animation-timeline', 'scroll()')) {
+
+      const ROT = { 'pquote-1':-3, 'pquote-2':2.5, 'pquote-3':-2 };
+      const SPD = { 'pquote-1':0.30, 'pquote-2':0.46, 'pquote-3':0.18 };
+      function val(map, el) {
+        for (const [c,v] of Object.entries(map)) { if (el.classList.contains(c)) return v; }
+        return 0;
+      }
+
+      const quotes  = document.querySelectorAll('.pquote');
+      const wrapper = document.getElementById('manifesto');
+      let wrapTop = 0, rafId = null;
+
+      function applyParallax() {
+        const rel = Math.max(0, window.scrollY - wrapTop);
+        quotes.forEach(q => {
+          const offset = rel * (1 - val(SPD, q));
+          q.style.transform = `translateY(${offset}px) rotate(${val(ROT,q)}deg)`;
+        });
+        rafId = null;
+      }
+
+      window.addEventListener('scroll', () => {
+        if (!rafId) rafId = requestAnimationFrame(applyParallax);
+      }, { passive: true });
+
+      function init() {
+        wrapTop = wrapper.getBoundingClientRect().top + window.scrollY;
+        applyParallax();
+      }
+      if (document.readyState === 'complete') init();
+      else window.addEventListener('load', init);
+
+      window.addEventListener('resize', () => {
+        wrapTop = wrapper.getBoundingClientRect().top + window.scrollY;
+        if (!rafId) rafId = requestAnimationFrame(applyParallax);
+      });
+    }
+
+    // ── Scroll reveal (all browsers) ──────────────────────────────────
+    const revealObserver = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('visible'); revealObserver.unobserve(e.target); }
+      });
+    }, { threshold: 0.08 });
+    document.querySelectorAll('.scroll-item').forEach(el => revealObserver.observe(el));
+  </script>
+
+</body>
+</html>
