@@ -351,6 +351,7 @@ const vto = [
 
 const L10_SEGMENTS = [
   {key:"segue",name:"Segue",mins:5,view:null,note:"Personal and professional good news."},
+  {key:"values",name:"Core values",mins:5,view:"values",note:"Read them aloud. Call out someone who lived one this week."},
   {key:"scorecard",name:"Scorecard",mins:5,view:"scorecard",note:"On or off goal only. Drop off-goal items to Issues."},
   {key:"rocks",name:"Rock review",mins:5,view:"rocks",note:"On track or off track. Drop off-track rocks to Issues."},
   {key:"headlines",name:"Customer & employee headlines",mins:5,view:"headlines",note:"Share and drop anything that needs discussion."},
@@ -734,6 +735,7 @@ function vL10(){
   let inner="";
   if(seg.view==="scorecard") inner=`<div class="rows">${measurables.map(m=>{const h=hit(m,m.values.at(-1));return `<div class="row" style="grid-template-columns:minmax(0,1fr) auto auto"><div class="title">${esc(m.name)}<div class="sub">${esc(P(m.owner_id).name)} · ${fmtVal(m,m.values.at(-1))} vs ${fmtGoal(m)}</div></div><span class="tag ${h?"good":"bad"}">${h?"On":"Off"}</span>${h?"<span></span>":`<button class="btn small" data-act="sc-issue" data-id="${m.id}">Drop to Issues</button>`}</div>`}).join("")}</div>`;
   else if(seg.view==="rocks") inner=`<div class="rows">${rocks.map(r=>`<div class="row" style="grid-template-columns:minmax(0,1fr) auto"><div class="title">${esc(r.title)}<div class="sub">${esc(P(r.owner_id).name)}</div></div><button class="pill s-${r.status}" data-act="cycle-rock" data-id="${r.id}">${STATUS_LABEL[r.status]}</button></div>`).join("")}</div>`;
+  else if(seg.view==="values") inner=`<div class="rows">${values.map((v,i)=>`<div class="row" style="grid-template-columns:28px minmax(0,1fr)"><span class="rank top">${i+1}</span><div class="title">${esc(v.name)}<div class="sub">${esc(v.description)}</div></div></div>`).join("")}</div>`;
   else if(seg.view==="headlines") inner=headlines.map(hlRow).join("");
   else if(seg.view==="todos") inner=`<div class="rows">${todos.map(todoRow).join("")}</div>`;
   else if(seg.view==="issues") inner=`<div class="rows">${issues.filter(i=>i.status==="open"&&i.list==="short_term").sort((a,b)=>(a.priority??9)-(b.priority??9)).map(issueRow).join("")}</div>`;
