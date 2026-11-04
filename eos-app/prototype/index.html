@@ -41,7 +41,7 @@ h3{font-size:14px;font-weight:600;font-family:var(--body)}
 .mono{font-family:var(--mono)}
 .num{font-variant-numeric:tabular-nums}
 .muted{color:var(--muted)}
-.eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.label{font-size:12.5px;color:var(--muted);font-weight:500}
 
 .app{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:100%}
 .app.with-drawer{grid-template-columns:220px minmax(0,1fr) 380px}
@@ -57,7 +57,7 @@ h3{font-size:14px;font-weight:600;font-family:var(--body)}
 .nav a:hover{background:var(--rail-active)}
 .nav a.active{background:var(--rail-active);color:#fff;box-shadow:inset 2px 0 0 var(--accent)}
 .nav .count{font-family:var(--mono);font-size:11px;opacity:.75}
-.nav-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;opacity:.55;padding:0 10px;margin-top:6px}
+.nav-sep{height:1px;background:var(--rail-active);margin:8px 10px}
 .rail-foot{margin-top:auto;font-size:12px;opacity:.7;padding:0 10px}
 
 /* main */
@@ -219,7 +219,7 @@ textarea{width:100%;min-height:60px;resize:vertical}
   .rail{top:env(safe-area-inset-top,0px)}
   .nav{flex-direction:row}
   .nav a{white-space:nowrap}
-  .nav-label,.rail-foot,.brand-name,.nav .count{display:none}
+  .nav-sep,.rail-foot,.brand-name,.nav .count{display:none}
   .topbar{position:static;padding-left:max(16px, env(safe-area-inset-left,0px));padding-right:max(16px, env(safe-area-inset-right,0px))}
   .content{padding-left:max(16px, env(safe-area-inset-left,0px));padding-right:max(16px, env(safe-area-inset-right,0px))}
   .grid-2,.l10{grid-template-columns:minmax(0,1fr)}
@@ -546,15 +546,15 @@ const ui = {issueTab:"short_term", solving:null, expanded:new Set(["r2"]), drawe
 try{ ui.drawer = localStorage.getItem("eoshub.drawer")==="1"; }catch(e){}
 
 const VIEWS = [
-  {key:"home",label:"This week",group:"Overview"},
-  {key:"l10",label:"L10 meeting",group:"Overview"},
-  {key:"rocks",label:"Rocks",group:"Traction"},
-  {key:"scorecard",label:"Scorecard",group:"Traction"},
-  {key:"issues",label:"Issues",group:"Traction"},
-  {key:"todos",label:"To-dos",group:"Traction"},
-  {key:"headlines",label:"Headlines",group:"Traction"},
-  {key:"values",label:"Core values & V/TO",group:"Vision"},
-  {key:"mcp",label:"MCP / Agents",group:"Connect"},
+  {key:"home",label:"This week",group:"overview"},
+  {key:"l10",label:"L10 meeting",group:"overview"},
+  {key:"values",label:"Core values & V/TO",group:"agenda"},
+  {key:"scorecard",label:"Scorecard",group:"agenda"},
+  {key:"rocks",label:"Rocks",group:"agenda"},
+  {key:"headlines",label:"Headlines",group:"agenda"},
+  {key:"todos",label:"To-dos",group:"agenda"},
+  {key:"issues",label:"Issues",group:"agenda"},
+  {key:"mcp",label:"MCP / Agents",group:"connect"},
 ];
 const current = () => { const h=location.hash.slice(1); return VIEWS.some(v=>v.key===h)?h:"home"; };
 
@@ -577,15 +577,14 @@ function vHome(){
   const mine=todos.filter(t=>t.owner_id==="p_ryan");
   const done=todos.filter(t=>t.done).length;
   return `
-  <div class="page-head"><div><div class="eyebrow">Week of ${fmtDate(CUR_WEEK)}</div><h1>This week</h1>
-  <p>What the leadership team needs to see before Tuesday's L10.</p></div>
+  <div class="page-head"><div><h1>This week</h1></div>
   <a class="btn primary" href="#l10">Start L10 →</a></div>
 
   <div class="stats">
-    <a class="stat" href="#rocks"><span class="eyebrow">Rocks on track</span><span class="big">${c.rocksOn}<small> / ${c.rocks}</small></span><div class="bar"><i style="width:${c.rocksOn/c.rocks*100}%"></i></div></a>
-    <a class="stat" href="#scorecard"><span class="eyebrow">Scorecard on goal</span><span class="big">${c.scHit}<small> / ${c.sc}</small></span><div class="bar"><i style="width:${c.scHit/c.sc*100}%"></i></div></a>
-    <a class="stat" href="#todos"><span class="eyebrow">To-dos done</span><span class="big">${Math.round(done/todos.length*100)}<small>%</small></span><div class="bar"><i style="width:${done/todos.length*100}%"></i></div></a>
-    <a class="stat" href="#issues"><span class="eyebrow">Open issues</span><span class="big">${c.issues}</span><span class="muted" style="font-size:12px">short-term list</span></a>
+    <a class="stat" href="#rocks"><span class="label">Rocks on track</span><span class="big">${c.rocksOn}<small> / ${c.rocks}</small></span><div class="bar"><i style="width:${c.rocksOn/c.rocks*100}%"></i></div></a>
+    <a class="stat" href="#scorecard"><span class="label">Scorecard on goal</span><span class="big">${c.scHit}<small> / ${c.sc}</small></span><div class="bar"><i style="width:${c.scHit/c.sc*100}%"></i></div></a>
+    <a class="stat" href="#todos"><span class="label">To-dos done</span><span class="big">${Math.round(done/todos.length*100)}<small>%</small></span><div class="bar"><i style="width:${done/todos.length*100}%"></i></div></a>
+    <a class="stat" href="#issues"><span class="label">Open issues</span><span class="big">${c.issues}</span><span class="muted" style="font-size:12px">short-term list</span></a>
   </div>
 
   <div class="grid-2">
@@ -617,8 +616,7 @@ function rockRow(r){
 }
 function vRocks(){
   const grp=(t,label)=>{const list=rocks.filter(r=>r.type===t);return `<section class="panel"><div class="panel-head"><h2>${label}</h2><span class="muted num">${list.filter(r=>r.status==="done").length}/${list.length} done</span></div><div class="rows">${list.map(rockRow).join("")}</div></section>`;};
-  return `<div class="page-head"><div><div class="eyebrow">Q${QUARTER.q} ${QUARTER.year} · ends ${fmtDate("2027-01-03")}</div><h1>Rocks</h1>
-  <p>90-day priorities. Click a status to cycle on track → off track → done. Open a rock to see its milestones.</p></div>
+  return `<div class="page-head"><div><h1>Rocks</h1></div>
   <button class="btn primary" data-act="new-rock">+ New rock</button></div>
   ${grp("company","Company rocks")}${grp("individual","Individual rocks")}`;
 }
@@ -628,14 +626,13 @@ function vScorecard(){
   const body=measurables.map(m=>{
     const cells=m.values.map((v,i)=>{
       const cur=WEEKS[i]===CUR_WEEK, h=hit(m,v);
-      if(cur) return `<td class="v cur ${h==null?"empty":h?"hit":"miss"}"><input type="text" inputmode="decimal" id="sc-${m.id}" data-act="sc-input" data-id="${m.id}" value="${v??""}" aria-label="${esc(m.name)} this week"></td>`;
+      if(cur) return `<td class="v cur ${h==null?"empty":h?"hit":"miss"}"><input type="text" inputmode="decimal" id="sc-${m.id}" data-act="sc-input" data-id="${m.id}" value="${v??""}" placeholder="—" title="Enter this week's number" aria-label="${esc(m.name)} this week"></td>`;
       return `<td class="v ${h==null?"empty":h?"hit":"miss"}">${fmtVal(m,v)}</td>`;
     }).join("");
     const trend=m.values.map(v=>{const h=hit(m,v);return `<i class="${h==null?"":h?"hit":"miss"}" style="height:${h==null?4:h?14:8}px"></i>`}).join("");
     return `<tr><td>${esc(m.name)}</td><td class="owner-cell">${owner(m.owner_id)}</td><td class="goal">${fmtGoal(m)}</td>${cells}<td><span class="trend">${trend}</span></td></tr>`;
   }).join("");
-  return `<div class="page-head"><div><div class="eyebrow">Weekly · last 8 weeks</div><h1>Scorecard</h1>
-  <p>Green is on goal, red is off goal. Enter this week's numbers in the highlighted column. In the L10 you only say "on" or "off" and drop reds to Issues.</p></div>
+  return `<div class="page-head"><div><h1>Scorecard</h1></div>
   <button class="btn primary" data-act="new-measurable">+ Measurable</button></div>
   <section class="panel table-wrap"><table class="sc"><thead><tr><th>Measurable</th><th class="owner-cell">Owner</th><th>Goal</th>${head}<th>Trend</th></tr></thead><tbody>${body}</tbody></table></section>`;
 }
@@ -665,10 +662,9 @@ function issueRow(i){
 function vIssues(){
   const list=issues.filter(i=>i.status==="open"&&i.list===ui.issueTab).sort((a,b)=>(a.priority??9)-(b.priority??9));
   const solved=issues.filter(i=>i.status==="solved");
-  return `<div class="page-head"><div><div class="eyebrow">IDS · Identify, discuss, solve</div><h1>Issues</h1>
-  <p>Short-term issues get worked in this week's L10, Top 3 first. Long-term issues wait for the quarterly.</p></div></div>
+  return `<div class="page-head"><div><h1>Issues</h1></div></div>
   <section class="panel">
-    <div class="panel-body"><form class="form" data-form="issue"><input type="text" id="new-issue" placeholder="Log an issue…" required>
+    <div class="panel-body"><form class="form" data-form="issue"><input type="text" id="new-issue" placeholder="Log an issue for this week's L10. Top 3 get solved first." required>
       <select id="new-issue-owner" aria-label="Owner">${people.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join("")}</select>
       <button class="btn primary" type="submit">Add issue</button></form></div>
     <div class="tabs" style="padding:0 12px">
@@ -692,11 +688,10 @@ function todoRow(t){
 function vTodos(){
   const list=todos.filter(t=>ui.todoFilter==="all"||!t.done);
   const done=todos.filter(t=>t.done).length;
-  return `<div class="page-head"><div><div class="eyebrow">Seven-day commitments</div><h1>To-dos</h1>
-  <p>Completion this week: <b class="num">${Math.round(done/todos.length*100)}%</b> (${done} of ${todos.length}). EOS target is 90%.</p></div>
-  <div class="form"><button class="btn" aria-pressed="${ui.todoFilter==="open"}" data-act="tfilter" data-f="open">Open</button><button class="btn" aria-pressed="${ui.todoFilter==="all"}" data-act="tfilter" data-f="all">All</button></div></div>
+  return `<div class="page-head"><div><h1>To-dos</h1></div>
+  <div class="form"><span class="chip num">${Math.round(done/todos.length*100)}% done · target 90%</span><button class="btn" aria-pressed="${ui.todoFilter==="open"}" data-act="tfilter" data-f="open">Open</button><button class="btn" aria-pressed="${ui.todoFilter==="all"}" data-act="tfilter" data-f="all">All</button></div></div>
   <section class="panel">
-    <div class="panel-body"><form class="form" data-form="todo"><input type="text" id="new-todo" placeholder="Add a to-do…" required>
+    <div class="panel-body"><form class="form" data-form="todo"><input type="text" id="new-todo" placeholder="Add a seven-day commitment" required>
       <select id="new-todo-owner" aria-label="Owner">${people.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join("")}</select>
       <button class="btn primary" type="submit">Add</button></form></div>
     <div class="rows" style="border-top:1px solid var(--line)">${list.length?list.map(todoRow).join(""):`<div class="empty">Everything is done.</div>`}</div>
@@ -710,10 +705,9 @@ function hlRow(h){
     <button class="btn small ghost" data-act="hl-issue" data-id="${h.id}">Drop to Issues</button></div>`;
 }
 function vHeadlines(){
-  return `<div class="page-head"><div><div class="eyebrow">Shared in the L10</div><h1>Headlines</h1>
-  <p>Short customer and employee news. Anything that needs discussion goes to Issues.</p></div></div>
+  return `<div class="page-head"><div><h1>Headlines</h1></div></div>
   <section class="panel"><div class="panel-body"><form class="form" data-form="headline">
-    <input type="text" id="new-hl" placeholder="Share a headline…" required>
+    <input type="text" id="new-hl" placeholder="Share a short customer or employee headline" required>
     <select id="new-hl-kind" aria-label="Kind"><option value="customer">Customer</option><option value="employee">Employee</option><option value="general">General</option></select>
     <select id="new-hl-sent" aria-label="Good or bad"><option value="good">Good</option><option value="bad">Bad</option><option value="neutral">Neutral</option></select>
     <button class="btn primary" type="submit">Share</button></form></div>
@@ -721,8 +715,7 @@ function vHeadlines(){
 }
 
 function vValues(){
-  return `<div class="page-head"><div><div class="eyebrow">Vision</div><h1>Core values & V/TO</h1>
-  <p>Who we are and where we're going. Placeholder wording; replace with ours.</p></div><button class="btn">Edit</button></div>
+  return `<div class="page-head"><div><h1>Core values & V/TO</h1></div><button class="btn">Edit</button></div>
   <div class="values">${values.map((v,i)=>`<article class="panel value"><span class="idx">Value ${i+1}</span><h3>${esc(v.name)}</h3><p style="margin:0">${esc(v.description)}</p><ul>${v.examples.map(e=>`<li>${esc(e)}</li>`).join("")}</ul></article>`).join("")}</div>
   <section class="panel"><div class="panel-head"><h2>Vision/Traction Organizer</h2><span class="tag">v3 · edited Oct 6</span></div>
     <div class="vto">${vto.map(([k,v])=>`<div class="k">${esc(k)}</div><div class="v">${esc(v)}</div>`).join("")}</div></section>`;
@@ -746,8 +739,7 @@ function vL10(){
     <div><button class="btn primary" data-act="end-l10">End meeting</button></div></div>`;
   else inner=`<div class="panel-body"><p style="margin:0">Each person shares one personal and one professional best from the past week.</p></div>`;
   const mm=String(Math.floor(timer.secs/60)).padStart(2,"0"), ss=String(timer.secs%60).padStart(2,"0");
-  return `<div class="page-head"><div><div class="eyebrow">Level 10 · Tue Nov 3, 9:00</div><h1>L10 meeting</h1>
-  <p>The agenda pulls live data from every other screen. Agents can prep it with <span class="mono">get_l10_snapshot</span>.</p></div>
+  return `<div class="page-head"><div><h1>L10 meeting</h1></div>
   <div class="form"><span class="timer" id="timer">${mm}:${ss}</span><button class="btn" data-act="timer">${timer.running?"Pause":"Start"}</button></div></div>
   <div class="l10">
     <section class="panel"><div class="panel-head"><h2>Agenda</h2><span class="muted num">${total} min</span></div>
@@ -757,8 +749,7 @@ function vL10(){
 }
 
 function vMcp(){
-  return `<div class="page-head"><div><div class="eyebrow">Model Context Protocol</div><h1>MCP / Agents</h1>
-  <p>Connect Claude (or any MCP client) to EOS Hub. Agents use the same rules as the web app, and every change is logged with who made it and whether it came from an agent.</p></div></div>
+  return `<div class="page-head"><div><h1>MCP / Agents</h1></div></div>
   <section class="panel"><div class="panel-head"><h2>Connection</h2><span class="tag good">Draft</span></div>
     <div class="panel-body" style="display:flex;flex-direction:column;gap:8px">
       <div class="form"><span class="muted" style="width:90px">Server URL</span><code class="mono">https://eoshub.example.com/mcp</code></div>
@@ -785,7 +776,7 @@ const RENDER = {home:vHome,rocks:vRocks,scorecard:vScorecard,issues:vIssues,todo
 function renderNav(){
   const c=counts(), cur=current(); let g="", html="";
   const badge={rocks:`${c.rocksOn}/${c.rocks}`,scorecard:`${c.scHit}/${c.sc}`,issues:c.issues,todos:c.todosOpen,headlines:headlines.length};
-  for(const v of VIEWS){ if(v.group!==g){g=v.group;html+=`<div class="nav-label">${g}</div>`;}
+  for(const v of VIEWS){ if(v.group!==g){if(g)html+=`<div class="nav-sep" role="separator"></div>`;g=v.group;}
     html+=`<a href="#${v.key}" class="${v.key===cur?"active":""}"><span>${v.label}</span>${badge[v.key]!=null?`<span class="count">${badge[v.key]}</span>`:""}</a>`; }
   $("#nav").innerHTML=html;
 }
@@ -795,10 +786,10 @@ function renderDrawer(){
   if(!ui.drawer) return;
   const m=MODEL[current()];
   d.innerHTML=`<h2>Data model <button class="btn small ghost" data-act="close-drawer" aria-label="Close">✕</button></h2>
-    <div><div class="eyebrow">Entities on this screen</div><div class="form" style="margin-top:6px">${m.entities.map(e=>`<span class="chip">${esc(e)}</span>`).join("")}</div></div>
+    <div><h3>Entities on this screen</h3><div class="form" style="margin-top:6px">${m.entities.map(e=>`<span class="chip">${esc(e)}</span>`).join("")}</div></div>
     <pre>${m.schema}</pre>
-    <div><div class="eyebrow">MCP tools</div><div class="form" style="margin-top:6px">${m.tools.map(t=>`<span class="chip mono" style="font-size:11.5px">${esc(t)}</span>`).join("")}</div></div>
-    <div><div class="eyebrow" style="margin-bottom:6px">Open questions</div><ol class="q">${m.questions.map(q=>`<li>${esc(q)}</li>`).join("")}</ol></div>
+    <div><h3>MCP tools</h3><div class="form" style="margin-top:6px">${m.tools.map(t=>`<span class="chip mono" style="font-size:11.5px">${esc(t)}</span>`).join("")}</div></div>
+    <div><h3 style="margin-bottom:6px">Open questions</h3><ol class="q">${m.questions.map(q=>`<li>${esc(q)}</li>`).join("")}</ol></div>
     <p class="muted" style="font-size:12px;margin:0">All entities also carry id, org_id, created_at, updated_at, created_by and source (web | mcp | import).</p>`;
 }
 function render(){
